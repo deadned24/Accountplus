@@ -1,0 +1,30 @@
+.item { padding-bottom:3px;}
+.obliterate{
+	padding: 2px;
+	cursor: pointer;       
+	}
+.btn-like{
+	border: 2px solid #000;
+	font-size: 10pt;
+	font-weight: 700;
+	background-color: #FFF;
+	color: #000;
+	-webkit-appearance: none;
+	-webkit-border-radius: 0;
+	display: inline-block;
+	padding: 2px 4px;
+	cursor: pointer;       
+	user-select: none;
+	margin-left:5px;
+	text-align: center;  
+	}
+.btn-like:active{        
+	background: #000;
+	color: #fff;
+	}
+.subhead { 
+		font-size: 1.2em;
+		font-weight: bold;
+		display: block;
+		padding-top: .5em;
+	}
