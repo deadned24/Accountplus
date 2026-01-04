@@ -107,7 +107,7 @@ rec2 [string] CSS_RULES = {
   white-space: nowrap; \
 	}\n","Ignore annoying snowmen text"),
 "m":new rec2("a[href=\"messages.php\"]::before{content: '🖂';}\n","Add 🖂 to message notifications"),
-"p":new rec2("a[href*=\"peevpee.php\"]::before{content: ' 🥊 ';}\n","Add 🥊 to pvp notifications"),
+"p":new rec2("a[href*=\"peevpee.php\"]::before{content: ' 🗮 ';}\n","Add 🗮 to pvp notifications"),
   };
   
 void CSSRules(buffer page){
