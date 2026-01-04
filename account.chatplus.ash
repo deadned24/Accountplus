@@ -9,6 +9,7 @@ CSS rules are generated in this script and stored to 2 data files [name]_Stars.t
 	these rules are also used to generate JS for Right Click Menu (rcm)
 	Doesn't add rcm to pages that don't have them, just fixing it for pages that do
 		* We're overwriting a function in rcm.20160406.js called 'launch' to do this
+	if data/extraChatRules.txt exists, will load it in pages as CSS (for advanced users)
 
 To add to a page:
 	import account.chatplus.ash;
@@ -58,8 +59,18 @@ function fixFontColors(root){\
 return $(this).text().length === 1;\
   }).css('color','#000');\
 }\
+function fixFontColors(root){\
+  $(document).find('font[color]').filter(function(){\
+return $(this).text().length === 1;\
+  }).css('color','#000');\
+}\
+function fixItalics(root){\
+var el = document.querySelector('i[title]');\
+if (el) el.textContent = el.title;\
+}\
 $(document).ajaxComplete(function(){\
   fixFontColors();\
+  fixItalics();\
 });\
 </script>\n";
 }
@@ -69,7 +80,7 @@ page.replace_string("</html>",myJS+"</html>");
 
 //"special" CSS rules (settings)
 /*
-c     Reduce chat colors 
+c     Reduce chat colors +effects
 L    Only have Left-to-Right text 
 S    Ignore annoying snowmen & safaris 
 m    Add 🖂 to message notifications 
@@ -84,7 +95,7 @@ rec2 [string] CSS_RULES = {
 "c":new rec2("span[style*=\"color:\"] {color: black !important;	font-weight: normal !important;}\n \
   font[color=\"darkred\"]{ color:black !important;}\n \
   font[color=\"#E6B426\"]{ color:black !important;}\n\
-  font[color=\"purple\"]{color:black !important;}\n","Reduce chat colors"),
+  font[color=\"purple\"]{color:black !important;}\n","Reduce chat colors & effects"),
 "L":new rec2("span[style=\"direction: rtl; unicode-bidi: bidi-override\"] {\
   direction: ltr !important; \
   unicode-bidi: normal !important;\
@@ -96,10 +107,34 @@ rec2 [string] CSS_RULES = {
   white-space: nowrap; \
 	}\n","Ignore annoying snowmen text"),
 "m":new rec2("a[href=\"messages.php\"]::before{content: '🖂';}\n","Add 🖂 to message notifications"),
+"p":new rec2("a[href*=\"peevpee.php\"]::before{content: ' 🥊 ';}\n","Add 🥊 to pvp notifications"),
   };
   
 void CSSRules(buffer page){
-//reads data ("_Stars") and a setting ("dn_chatplus") to generates CSS rules in relay scripts
+//reads data ("_Stars") to generates CSS rules (emojis for people) in relay scripts
+
+if (get_property("_dn_chatplus")==""){
+	set_property("_dn_chatplus","1"); 
+	print("You are using Chat+ KOL's #1 chat add-on");
+	}
+
+string myCSS = "\n<style type=text/css>\n";
+
+//reads <name>_stars.txt data
+string [string] myStars;
+file_to_map(to_lower_case(my_name())+"_Stars.txt", myStars); //eg "deadned_Stars.txt"
+
+//CSS rule builder
+foreach c,d in myStars{
+	myCSS+="a[href=\"showplayer.php?who="+c+"\"]::before {content: '"+star1map[d]+"';}\n";
+	}
+myCSS+="</style>\n";
+myCSS+="<script language=Javascript src=\"/images/scripts/jquery-1.3.1.min.js\"></script>";
+page.replace_string("</head>",myCSS+"</head>");
+}
+
+void CSSRules2(buffer page){
+//generates CSS rules in relay scripts for "specials" and extraChatRules (for chat)
 
 string myCSS = "\n<style type=text/css>\n";
 
@@ -116,11 +151,10 @@ foreach key in CSS_RULES
 string [string] myStars;
 file_to_map(to_lower_case(my_name())+"_Stars.txt", myStars); //eg "deadned_Stars.txt"
 
-//CSS rule builder
-foreach c,d in myStars{
-	myCSS+="a[href=\"showplayer.php?who="+c+"\"]::before {content: '"+star1map[d]+"';}\n";
-	}
-
+//extraChatRules.txt is an arbitrary file to load in more CSS rules. it could be any CSS
+foreach _,rule in file_to_array("extraChatRules.txt")
+	myCSS+=rule+"\n";
+	
 myCSS+="</style>\n";
 myCSS+="<script language=Javascript src=\"/images/scripts/jquery-1.3.1.min.js\"></script>";
 page.replace_string("</head>",myCSS+"</head>");
@@ -141,6 +175,7 @@ void rcm_fix(buffer page){
 //all of the above functions in 1 for easy import.
 actionGen(page);
 CSSRules(page);
+CSSRules2(page);
 modJS(page);
 }
 
@@ -237,10 +272,10 @@ CSSRules(page);
 page.append("<div class=container><div><dl><dt><b>Add Rule:</b></dt>");
 string input1=" \
 <dd><form id=dn_star action="+__FILE__+" method=\"POST\" > \
-  <input type=\"text\" id=\"name\" placeholder=\"rule name\" name=\"name\" maxlength=\"10\" size=\"10\"> \
-  <input type=\"text\" id=\"glyph\" placeholder=\"emoji\" name=\"glyph\" maxlength=\"4\" size=\"4\"> \
-  <input type=\"hidden\" id=\"action\" name=\"action\" value=\"add_rule\">\
-  <span id=dn_star class=btn-like>submit</span>\
+<input type=\"text\" id=\"name\" placeholder=\"rule name\" name=\"name\" maxlength=\"10\" size=\"10\">\
+<input type=\"text\" id=\"glyph\" placeholder=\"emoji\" name=\"glyph\" maxlength=\"4\" size=\"4\">\
+<input type=\"hidden\" id=\"action\" name=\"action\" value=\"add_rule\">\
+<span id=dn_star class=btn-like>submit</span>\
 </form></dd></dl></div>\n";
 page.append(input1);
 
@@ -286,10 +321,22 @@ foreach a in CSS_RULES
   </dd>";
 specials+="\
 <dd>  <span id=dn_specials class=btn-like>Update Chat Preferences</span></dd>\
- </form></dl></div></div>\
- <hr color=blue width=90%>\
+ </form></dl></div></div>";
+
+//display the CSS in extraChatRules.txt (user created file) if it exists
+if (file_to_array("extraChatRules.txt")[1]!=""){
+	specials+="<hr color=blue width=90%><b>extraChatRules.txt:</b>\
+<div style=\"background-color:#f0f0f0;border:1px solid #000;max-height:12em;overflow:auto;\" class=nes >";
+	foreach _,rule in file_to_array("extraChatRules.txt")
+		specials+=rule+"<br>";
+	specials+="</div>";
+	}
+ 
+specials+="<hr color=blue width=90%>\
  <center><h6>Chat must be reloaded for changes to apply</h6></center>";
 page.append(specials);
+
+
 
 //random-ish emoji
 string [int] e=split_string("😂,👍,❤️,😍,🤣,😊,👫,🚀,👀,💕",",");
