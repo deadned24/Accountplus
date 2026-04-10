@@ -112,7 +112,7 @@ rec2 [string] CSS_RULES = {
   }\n","Ignore annoying snowmen text"),
 "m":new rec2("a[href=\"messages.php\"]::before{content: '🖂';}\n\
   a[href*=\"peevpee.php\"]::before{content: ' 🗮 ';}\n","Add 🖂, 🗮, to notifications"),
-"p":new rec2("","Embolden your name"),
+"p":new rec2("","Bolded name in chat"),
 };
   
 void CSSRules(buffer page){
