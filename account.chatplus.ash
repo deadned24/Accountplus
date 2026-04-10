@@ -53,11 +53,13 @@ myJS+="}break;\
 //addon for colored text in chat fix (rainbow text, V, ???) - cant do with CSS
 
 if (contains_text(get_property("dn_chatplus"),"c:1;")){
+string rString=to_lower_case(my_name());
 myJS+="<script>\
-function fixFontColors(root){\
-  $(document).find('font[color]').filter(function(){\
-return $(this).text().length === 1;\
-  }).css('color','#000');\
+function boldName(root) {\
+  $(root).find(':contains(\""+rString+"\")').each(function() {\
+    var regex = /\\b"+rString+"\\b/gi;\
+    this.innerHTML = this.innerHTML.replace(regex, '<span style=\"font-weight:bold;\">$&</span>');\
+  });\
 }\
 function fixFontColors(root){\
   $(document).find('font[color]').filter(function(){\
@@ -68,9 +70,10 @@ function fixItalics(root){\
 var el = document.querySelector('i[title]');\
 if (el) el.textContent = el.title;\
 }\
-$(document).ajaxComplete(function(){\
-  fixFontColors();\
-  fixItalics();\
+$(document).ajaxSuccess(function() {\
+  "+(contains_text(get_property("dn_chatplus"),"p:1;")? "boldName('body');":"")+"\
+  fixFontColors('body');\
+  fixItalics('body');\
 });\
 </script>\n";
 }
@@ -94,6 +97,7 @@ reduces V mask Vs but also hits System Message:
 rec2 [string] CSS_RULES = {
 "c":new rec2("span[style*=\"color:\"] {color: black !important;	font-weight: normal !important;}\n \
   font[color=\"darkred\"]{ color:black !important;}\n \
+  font[color=\"chocolate\"]{ color:black !important;}\n \
   font[color=\"#E6B426\"]{ color:black !important;}\n\
   font[color=\"purple\"]{color:black !important;}\n","Reduce chat colors & effects"),
 "L":new rec2("span[style=\"direction: rtl; unicode-bidi: bidi-override\"] {\
@@ -105,10 +109,11 @@ rec2 [string] CSS_RULES = {
   max-width: 0;\
   overflow: clip;\
   white-space: nowrap; \
-	}\n","Ignore annoying snowmen text"),
-"m":new rec2("a[href=\"messages.php\"]::before{content: '🖂';}\n","Add 🖂 to message notifications"),
-"p":new rec2("a[href*=\"peevpee.php\"]::before{content: ' 🗮 ';}\n","Add 🗮 to pvp notifications"),
-  };
+  }\n","Ignore annoying snowmen text"),
+"m":new rec2("a[href=\"messages.php\"]::before{content: '🖂';}\n\
+  a[href*=\"peevpee.php\"]::before{content: ' 🗮 ';}\n","Add 🖂, 🗮, to notifications"),
+"p":new rec2("","Embolden your name"),
+};
   
 void CSSRules(buffer page){
 //reads data ("_Stars") to generates CSS rules (emojis for people) in relay scripts
@@ -326,7 +331,7 @@ specials+="\
 //display the CSS in extraChatRules.txt (user created file) if it exists
 if (file_to_array("extraChatRules.txt")[1]!=""){
 	specials+="<hr color=blue width=90%><b>extraChatRules.txt:</b>\
-<div style=\"background-color:#f0f0f0;border:1px solid #000;max-height:12em;overflow:auto;\" class=nes >";
+<div style=\"background-color:#f0f0f0;border:1px solid #000;max-height:12em;overflow:auto;\" >";
 	foreach _,rule in file_to_array("extraChatRules.txt")
 		specials+=rule+"<br>";
 	specials+="</div>";
