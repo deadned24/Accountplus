@@ -55,12 +55,6 @@ myJS+="}break;\
 if (contains_text(get_property("dn_chatplus"),"c:1;")){
 string rString=to_lower_case(my_name());
 myJS+="<script>\
-function boldName(root) {\
-  $(root).find(':contains(\""+rString+"\")').each(function() {\
-    var regex = /\\b"+rString+"\\b/gi;\
-    this.innerHTML = this.innerHTML.replace(regex, '<span style=\"font-weight:bold;\">$&</span>');\
-  });\
-}\
 function fixFontColors(root){\
   $(document).find('font[color]').filter(function(){\
 return $(this).text().length === 1;\
@@ -71,9 +65,22 @@ var el = document.querySelector('i[title]');\
 if (el) el.textContent = el.title;\
 }\
 $(document).ajaxSuccess(function() {\
-  "+(contains_text(get_property("dn_chatplus"),"p:1;")? "boldName('body');":"")+"\
   fixFontColors('body');\
   fixItalics('body');\
+});\
+</script>\n";
+}
+if (contains_text(get_property("dn_chatplus"),"p:1;")){
+string rString=to_lower_case(my_name());
+myJS+="<script>\
+function boldName(root) {\
+  $(root).find(':contains(\""+rString+"\")').each(function() {\
+    var regex = /\\b"+rString+"\\b/gi;\
+    this.innerHTML = this.innerHTML.replace(regex, '<span style=\"font-weight:bold;\">$&</span>');\
+  });\
+}\
+$(document).ajaxSuccess(function() {\
+  boldName('body');\
 });\
 </script>\n";
 }
