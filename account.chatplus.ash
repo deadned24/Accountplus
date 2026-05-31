@@ -60,9 +60,12 @@ function fixFontColors(root){\
 return $(this).text().length === 1;\
   }).css('color','#000');\
 }\
-function fixItalics(root){\
-var el = document.querySelector('i[title]');\
-if (el) el.textContent = el.title;\
+function fixItalics(root) {\
+  const container = document.querySelector(root) || document;\
+  const elements = container.querySelectorAll('i[title]');\
+  elements.forEach(el => {\
+    el.textContent = el.getAttribute('title');\
+  });\
 }\
 $(document).ajaxSuccess(function() {\
   fixFontColors('body');\
@@ -73,10 +76,18 @@ $(document).ajaxSuccess(function() {\
 if (contains_text(get_property("dn_chatplus"),"p:1;")){
 string rString=to_lower_case(my_name());
 myJS+="<script>\
-function boldName(root) {\
+function boldNameOLD(root) {\
   $(root).find(':contains(\""+rString+"\")').each(function() {\
-    var regex = /\\b"+rString+"\\b/gi;\
-    this.innerHTML = this.innerHTML.replace(regex, '<span style=\"font-weight:bold;\">$&</span>');\
+    var regex = /(?:@)?"+rString+"\\b(?!<\\/font>)/gi;\
+    this.innerHTML = this.innerHTML.replace(regex, '<b>$&</b>');\
+  });\
+}\
+function boldName(root) {\
+  $(root).find('*').contents().each(function() {\
+    if (this.nodeType === 3 && this.parentNode.tagName !== 'B') { // Text node\
+      var regex = new RegExp(\""+rString+"\", 'gi');\
+      $(this).replaceWith(this.nodeValue.replace(regex, '<b>$&</b>'));\
+    }\
   });\
 }\
 $(document).ajaxSuccess(function() {\
@@ -90,10 +101,11 @@ page.replace_string("</html>",myJS+"</html>");
 
 //"special" CSS rules (settings)
 /*
-c     Reduce chat colors +effects
-L    Only have Left-to-Right text 
-S    Ignore annoying snowmen & safaris 
-m    Add 🖂 to message notifications 
+c   Reduce chat colors +effects (& safaris)
+L   Only have Left-to-Right text 
+S   Ignore annoying snowmen 
+m   Add 🖂 & 🗮 to message notifications 
+p	name highlighting
 record rec2 {string cmd; string glyph; }; (cmd=CSS rule, glyph=label)
 
 // add more to this map and prefs+page will update accordingly
@@ -106,20 +118,20 @@ rec2 [string] CSS_RULES = {
   font[color=\"darkred\"]{ color:black !important;}\n \
   font[color=\"chocolate\"]{ color:black !important;}\n \
   font[color=\"#E6B426\"]{ color:black !important;}\n\
-  font[color=\"purple\"]{color:black !important;}\n","Reduce chat colors & effects"),
+  font[color=\"purple\"]{color:black !important;}\n", "<span title=\"Supresses most chat colors, fixes Safari & Harpoon effects\">Reduce chat colors & effects</span>"),
 "L":new rec2("span[style=\"direction: rtl; unicode-bidi: bidi-override\"] {\
   direction: ltr !important; \
   unicode-bidi: normal !important;\
-  }\n","Only have Left-to-Right text"),
+  }\n","<span title=\"\\hardcore tomfoolery\">Only have Left-to-Right text</span>"),
 "S":new rec2("img[src=\"/images/otherimages/12x12snowman.gif\"] + font[color=\"blue\"] { \
   display: inline-block; /* so max-width can be set */\
   max-width: 0;\
   overflow: clip;\
   white-space: nowrap; \
-  }\n","Ignore annoying snowmen text"),
+  }\n","<span title=\"Hides text from snowmen shoutouts\">Ignore annoying snowmen text</span>"),
 "m":new rec2("a[href=\"messages.php\"]::before{content: '🖂';}\n\
-  a[href*=\"peevpee.php\"]::before{content: ' 🗮 ';}\n","Add 🖂, 🗮, to notifications"),
-"p":new rec2("","Bolded name in chat"),
+  a[href*=\"peevpee.php\"]::before{content: ' 🗮 ';}\n","<span title=\"Matches messages.php & peevpee.php\">Add 🖂, 🗮, to notifications</span>"),
+"p":new rec2("","<span title=\"Adds <b> tag on name string\">Bolded name in chat</span>"),
 };
   
 void CSSRules(buffer page){
@@ -354,9 +366,9 @@ page.append(specials);
 string [int] e=split_string("😂,👍,❤️,😍,🤣,😊,👫,🚀,👀,💕",",");
 string f=e[(gameday_to_int() % count(e))];
 
-//write ~2000 emojis to the page when you push the button. some wont display? 127744 - 129767
+//write ~2000 emojis to the page when you push the button. some wont display? 127744 - 129769
 page.append("<p><div id=\"ec\"><center><button onclick=\"we()\" style=\"width: 500px;height: 50px;\">Show Emojis "+f+"</button></center></div>\
-<script>function we(){let e=\"<hr><font size=7>\";for(let n=127744;n<129768;n++)n%100==0&&(e+=\"<hr>\"),e+=String.fromCodePoint(n)+\" \";document.getElementById(\"ec\").innerHTML=e+\"</font>\"}</script>");
+<script>function we(){let e=\"<hr><font size=7>\";for(let n=127744;n<129769;n++)n%100==0&&(e+=\"<hr>\"),e+=String.fromCodePoint(n)+\" \";document.getElementById(\"ec\").innerHTML=e+\"</font>\"}</script>");
 
 page.append("<script src=account.chatplus.js></script>");
 page.append("\n</body>\n</html>");
